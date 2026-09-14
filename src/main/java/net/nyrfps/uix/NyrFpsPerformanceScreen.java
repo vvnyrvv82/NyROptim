@@ -12,18 +12,6 @@ import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
-/**
- * NyrFps performance settings screen.
- *
- * Minecraft 26.2 compatible version.
- *
- * Contains:
- * - Overview
- * - Chunk Engine
- * - Graphics
- * - Vulkan
- * - Android
- */
 public class NyrFpsPerformanceScreen extends Screen {
 
     private static final String[] PAGES = {
@@ -49,20 +37,14 @@ public class NyrFpsPerformanceScreen extends Screen {
     private final Screen parent;
 
     private int page;
-
     private NyrFpsConfig cfg;
-
     private Object vk;
 
-    public NyrFpsPerformanceScreen(
-            Component title,
-            Screen parent
-    ) {
+    public NyrFpsPerformanceScreen(Component title, Screen parent) {
         super(title);
 
         this.parent = parent;
         this.page = 0;
-
         this.cfg = NyrFpsInitializer.CONFIG;
         this.vk = getVk();
     }
@@ -83,31 +65,23 @@ public class NyrFpsPerformanceScreen extends Screen {
         buildPage();
     }
 
-    /*
-     * ------------------------------------------------------------
-     * Navigation
-     * ------------------------------------------------------------
-     */
-
     private void addNav() {
         int y = 70;
 
         for (int i = 0; i < PAGES.length; i++) {
-
             int idx = i;
 
-            NyrControlWidget nav =
-                    new NyrControlWidget(
-                            PADDING,
-                            y,
-                            NAV_WIDTH - PADDING * 2,
-                            32,
-                            PAGES[i],
-                            () -> {
-                                this.page = idx;
-                                this.init();
-                            }
-                    );
+            NyrControlWidget nav = new NyrControlWidget(
+                    PADDING,
+                    y,
+                    NAV_WIDTH - PADDING * 2,
+                    32,
+                    PAGES[i],
+                    () -> {
+                        this.page = idx;
+                        this.init();
+                    }
+            );
 
             addRenderableWidget(nav);
 
@@ -115,32 +89,18 @@ public class NyrFpsPerformanceScreen extends Screen {
         }
     }
 
-    /*
-     * ------------------------------------------------------------
-     * Page content
-     * ------------------------------------------------------------
-     */
-
     private void buildPage() {
-
-        int contentX =
-                NAV_WIDTH + PADDING;
-
-        int contentW =
-                Math.max(
-                        280,
-                        this.width - contentX - PADDING
-                );
+        int contentX = NAV_WIDTH + PADDING;
+        int contentW = Math.max(
+                280,
+                this.width - contentX - PADDING
+        );
 
         int y = 70;
 
         switch (page) {
 
-            /*
-             * OVERVIEW
-             */
             case 0 -> {
-
                 addBool(
                         contentX,
                         y,
@@ -181,11 +141,7 @@ public class NyrFpsPerformanceScreen extends Screen {
                 );
             }
 
-            /*
-             * CHUNK ENGINE
-             */
             case 1 -> {
-
                 addInt(
                         contentX,
                         y,
@@ -261,11 +217,7 @@ public class NyrFpsPerformanceScreen extends Screen {
                 );
             }
 
-            /*
-             * GRAPHICS
-             */
             case 2 -> {
-
                 addBool(
                         contentX,
                         y,
@@ -273,12 +225,7 @@ public class NyrFpsPerformanceScreen extends Screen {
                         "Entity culling",
                         () -> getBool(vk, "entityCulling"),
                         v -> {
-                            setBool(
-                                    vk,
-                                    "entityCulling",
-                                    v
-                            );
-
+                            setBool(vk, "entityCulling", v);
                             saveVulkan();
                         }
                 );
@@ -290,17 +237,9 @@ public class NyrFpsPerformanceScreen extends Screen {
                         y,
                         contentW,
                         "Advanced culling",
-                        () -> getInt(
-                                vk,
-                                "advCulling"
-                        ) != 0,
+                        () -> getInt(vk, "advCulling") != 0,
                         v -> {
-                            setInt(
-                                    vk,
-                                    "advCulling",
-                                    v ? 1 : 0
-                            );
-
+                            setInt(vk, "advCulling", v ? 1 : 0);
                             saveVulkan();
                         }
                 );
@@ -312,17 +251,9 @@ public class NyrFpsPerformanceScreen extends Screen {
                         y,
                         contentW,
                         "Back-face culling",
-                        () -> getBool(
-                                vk,
-                                "backFaceCulling"
-                        ),
+                        () -> getBool(vk, "backFaceCulling"),
                         v -> {
-                            setBool(
-                                    vk,
-                                    "backFaceCulling",
-                                    v
-                            );
-
+                            setBool(vk, "backFaceCulling", v);
                             saveVulkan();
                         }
                 );
@@ -334,17 +265,9 @@ public class NyrFpsPerformanceScreen extends Screen {
                         y,
                         contentW,
                         "Texture animations",
-                        () -> getBool(
-                                vk,
-                                "textureAnimations"
-                        ),
+                        () -> getBool(vk, "textureAnimations"),
                         v -> {
-                            setBool(
-                                    vk,
-                                    "textureAnimations",
-                                    v
-                            );
-
+                            setBool(vk, "textureAnimations", v);
                             saveVulkan();
                         }
                 );
@@ -356,37 +279,22 @@ public class NyrFpsPerformanceScreen extends Screen {
                         y,
                         contentW,
                         "Indirect draw",
-                        () -> getBool(
-                                vk,
-                                "indirectDraw"
-                        ),
+                        () -> getBool(vk, "indirectDraw"),
                         v -> {
-                            setBool(
-                                    vk,
-                                    "indirectDraw",
-                                    v
-                            );
-
+                            setBool(vk, "indirectDraw", v);
                             saveVulkan();
                         }
                 );
             }
 
-            /*
-             * VULKAN
-             */
             case 3 -> {
-
                 addInt(
                         contentX,
                         y,
                         contentW,
                         "Frame queue size",
                         () -> vk != null
-                                ? getInt(
-                                        vk,
-                                        "frameQueueSize"
-                                )
+                                ? getInt(vk, "frameQueueSize")
                                 : cfg.frameQueueSize,
                         this::setFrameQueueSize,
                         1,
@@ -402,10 +310,7 @@ public class NyrFpsPerformanceScreen extends Screen {
                         contentW,
                         "Chunk builder threads",
                         () -> vk != null
-                                ? getInt(
-                                        vk,
-                                        "builderThreads"
-                                )
+                                ? getInt(vk, "builderThreads")
                                 : cfg.builderThreads,
                         this::setBuilderThreads,
                         1,
@@ -420,17 +325,9 @@ public class NyrFpsPerformanceScreen extends Screen {
                         y,
                         contentW,
                         "Unique opaque layer",
-                        () -> getBool(
-                                vk,
-                                "uniqueOpaqueLayer"
-                        ),
+                        () -> getBool(vk, "uniqueOpaqueLayer"),
                         v -> {
-                            setBool(
-                                    vk,
-                                    "uniqueOpaqueLayer",
-                                    v
-                            );
-
+                            setBool(vk, "uniqueOpaqueLayer", v);
                             saveVulkan();
                         }
                 );
@@ -442,27 +339,15 @@ public class NyrFpsPerformanceScreen extends Screen {
                         y,
                         contentW,
                         "Ambient occlusion",
-                        () -> getInt(
-                                vk,
-                                "ambientOcclusion"
-                        ) != 0,
+                        () -> getInt(vk, "ambientOcclusion") != 0,
                         v -> {
-                            setInt(
-                                    vk,
-                                    "ambientOcclusion",
-                                    v ? 1 : 0
-                            );
-
+                            setInt(vk, "ambientOcclusion", v ? 1 : 0);
                             saveVulkan();
                         }
                 );
             }
 
-            /*
-             * ANDROID
-             */
             case 4 -> {
-
                 addBool(
                         contentX,
                         y,
@@ -535,9 +420,6 @@ public class NyrFpsPerformanceScreen extends Screen {
             }
         }
 
-        /*
-         * Close button
-         */
         addRenderableWidget(
                 new NyrControlWidget(
                         this.width - 170,
@@ -549,12 +431,6 @@ public class NyrFpsPerformanceScreen extends Screen {
                 )
         );
     }
-
-    /*
-     * ------------------------------------------------------------
-     * Widget helpers
-     * ------------------------------------------------------------
-     */
 
     private void addBool(
             int x,
@@ -582,3 +458,265 @@ public class NyrFpsPerformanceScreen extends Screen {
             int y,
             int w,
             String label,
+            IntSupplier get,
+            IntConsumer set,
+            int min,
+            int max,
+            int step
+    ) {
+        addRenderableWidget(
+                new NyrControlWidget(
+                        x,
+                        y,
+                        w,
+                        ROW_HEIGHT,
+                        label,
+                        get,
+                        set,
+                        min,
+                        max,
+                        step
+                )
+        );
+    }
+
+    private void setBuilderThreads(int v) {
+        cfg.builderThreads = v;
+
+        NyrFpsChunkEngine.applyMobilePolicy(cfg);
+
+        cfg.save();
+
+        NyrFpsInitializer.syncVulkanConfig(cfg);
+    }
+
+    private void setFrameQueueSize(int v) {
+        cfg.frameQueueSize = v;
+
+        cfg.save();
+
+        NyrFpsInitializer.syncVulkanConfig(cfg);
+    }
+
+    private void resetMobileProfile() {
+        cfg.builderThreads = 2;
+        cfg.frameQueueSize = 3;
+        cfg.chunkBuildBudgetMs = 4;
+        cfg.preloadRadius = 2;
+        cfg.adaptiveBuilder = true;
+        cfg.mobileProfile = true;
+
+        NyrFpsChunkEngine.applyMobilePolicy(cfg);
+
+        cfg.save();
+
+        NyrFpsInitializer.syncVulkanConfig(cfg);
+
+        init();
+    }
+
+    private void applyAndClose() {
+        NyrFpsChunkEngine.applyMobilePolicy(cfg);
+
+        cfg.save();
+
+        NyrFpsInitializer.syncVulkanConfig(cfg);
+
+        onClose();
+    }
+
+    @Override
+    public void onClose() {
+        this.minecraft.gui.setScreen(this.parent);
+    }
+
+    private Object getVk() {
+        try {
+            Class<?> vmInit =
+                    Class.forName("net.vulkanmod.Initializer");
+
+            return vmInit
+                    .getField("CONFIG")
+                    .get(null);
+
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    private void saveVulkan() {
+        if (vk == null) {
+            return;
+        }
+
+        try {
+            Class.forName(
+                    "net.vulkanmod.config.Config"
+            ).getMethod(
+                    "write"
+            ).invoke(vk);
+
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static boolean getBool(
+            Object target,
+            String field
+    ) {
+        if (target == null) {
+            return false;
+        }
+
+        try {
+            return target
+                    .getClass()
+                    .getField(field)
+                    .getBoolean(target);
+
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    private static int getInt(
+            Object target,
+            String field
+    ) {
+        if (target == null) {
+            return 0;
+        }
+
+        try {
+            return target
+                    .getClass()
+                    .getField(field)
+                    .getInt(target);
+
+        } catch (Throwable t) {
+            return 0;
+        }
+    }
+
+    private static void setBool(
+            Object target,
+            String field,
+            boolean value
+    ) {
+        if (target == null) {
+            return;
+        }
+
+        try {
+            target
+                    .getClass()
+                    .getField(field)
+                    .setBoolean(target, value);
+
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static void setInt(
+            Object target,
+            String field,
+            int value
+    ) {
+        if (target == null) {
+            return;
+        }
+
+        try {
+            target
+                    .getClass()
+                    .getField(field)
+                    .setInt(target, value);
+
+        } catch (Throwable ignored) {
+        }
+    }
+
+    @Override
+    public void extractRenderState(
+            GuiGraphicsExtractor gfx,
+            int mouseX,
+            int mouseY,
+            float partialTick
+    ) {
+        gfx.fill(
+                0,
+                0,
+                this.width,
+                this.height,
+                COLOR_BG
+        );
+
+        gfx.fill(
+                0,
+                0,
+                NAV_WIDTH,
+                this.height,
+                COLOR_NAV_BG
+        );
+
+        gfx.fill(
+                NAV_WIDTH,
+                0,
+                this.width,
+                this.height,
+                COLOR_CONTENT_BG
+        );
+
+        super.extractRenderState(
+                gfx,
+                mouseX,
+                mouseY,
+                partialTick
+        );
+
+        gfx.text(
+                this.font,
+                "NyrFps",
+                PADDING,
+                20,
+                COLOR_TITLE,
+                true
+        );
+
+        gfx.text(
+                this.font,
+                "ANDROID PERFORMANCE",
+                PADDING,
+                36,
+                COLOR_SUB,
+                false
+        );
+
+        gfx.text(
+                this.font,
+                PAGES[this.page],
+                NAV_WIDTH + PADDING,
+                20,
+                COLOR_TITLE,
+                true
+        );
+
+        gfx.text(
+                this.font,
+                "Real interactive settings",
+                NAV_WIDTH + PADDING,
+                36,
+                COLOR_SUB,
+                false
+        );
+
+        gfx.text(
+                this.font,
+                "Tap a setting to change it",
+                NAV_WIDTH + PADDING,
+                this.height - 20,
+                COLOR_HINT,
+                false
+        );
+    }
+}
