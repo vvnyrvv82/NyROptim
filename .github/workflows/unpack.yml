@@ -1,53 +1,67 @@
-name: Unpack NyrFps Project
+name: Fix NyrFps Project
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  unpack:
+  fix:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout full history
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Find and extract ZIP
+      - name: Restore project from previous ZIP
         run: |
           set -e
 
-          ZIP=$(find . -maxdepth 1 -type f -name "*.zip" | head -n 1)
+          echo "Searching ZIP in previous commit..."
+
+          ZIP=$(git ls-tree -r --name-only HEAD~1 | grep -E '\.zip$' | head -n 1)
 
           if [ -z "$ZIP" ]; then
-            echo "ZIP file not found"
+            echo "ZIP not found"
             exit 1
           fi
 
-          echo "Found: $ZIP"
+          echo "Found ZIP: $ZIP"
 
-          mkdir -p extracted
-          unzip -o "$ZIP" -d extracted
+          git show "HEAD~1:$ZIP" > /tmp/nyrfps.zip
 
-          ROOT=$(find extracted -mindepth 1 -maxdepth 1 -type d | head -n 1)
+          rm -rf /tmp/nyrfps
+          mkdir -p /tmp/nyrfps
 
-          if [ -n "$ROOT" ]; then
-            cp -a "$ROOT"/. .
-          else
-            cp -a extracted/. .
+          unzip -o /tmp/nyrfps.zip -d /tmp/nyrfps
+
+          PROJECT_ROOT=$(find /tmp/nyrfps -name build.gradle -type f -print -quit | xargs dirname)
+
+          if [ -z "$PROJECT_ROOT" ]; then
+            echo "build.gradle not found"
+            find /tmp/nyrfps -maxdepth 4 -type f
+            exit 1
           fi
 
-          rm -rf extracted
-          rm -f "$ZIP"
+          echo "Project root: $PROJECT_ROOT"
 
-      - name: Commit files
+          rm -rf main
+
+          cp -a "$PROJECT_ROOT"/. .
+
+          rm -rf /tmp/nyrfps
+          rm -f /tmp/nyrfps.zip
+
+          echo "Project restored."
+
+      - name: Commit fixed project
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          git add .
-          git commit -m "Extract NyrFps project" || echo "Nothing to commit"
+          git add -A
+          git commit -m "Fix NyrFps project structure" || echo "Nothing to commit"
           git push
