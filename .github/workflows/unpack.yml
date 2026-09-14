@@ -20,26 +20,23 @@ jobs:
         run: |
           set -e
 
-          echo "Searching for original ZIP..."
+          echo "Searching ZIP in Git history..."
 
-          ZIP_COMMIT=$(git log --all --diff-filter=A --format='%H' -- '*.zip' '*.ZIP' | head -n 1)
+          ZIP_COMMIT=$(git log --all --format='%H' -- '*.zip' | head -n 1)
 
           if [ -z "$ZIP_COMMIT" ]; then
-            echo "Original ZIP commit not found"
-            git log --all --oneline --decorate -20
+            echo "ZIP commit not found"
+            exit 1
+          fi
+
+          ZIP_PATH=$(git ls-tree -r --name-only "$ZIP_COMMIT" | grep -E '\.zip$' | head -n 1)
+
+          if [ -z "$ZIP_PATH" ]; then
+            echo "ZIP path not found"
             exit 1
           fi
 
           echo "ZIP commit: $ZIP_COMMIT"
-
-          ZIP_PATH=$(git ls-tree -r --name-only "$ZIP_COMMIT" | grep -Ei '\.zip$' | head -n 1)
-
-          if [ -z "$ZIP_PATH" ]; then
-            echo "ZIP path not found in commit"
-            git ls-tree -r --name-only "$ZIP_COMMIT"
-            exit 1
-          fi
-
           echo "ZIP path: $ZIP_PATH"
 
           git show "$ZIP_COMMIT:$ZIP_PATH" > /tmp/nyrfps.zip
@@ -53,25 +50,27 @@ jobs:
 
           if [ -z "$PROJECT_ROOT" ]; then
             echo "build.gradle not found"
-            find /tmp/nyrfps -maxdepth 5 -type f
             exit 1
           fi
 
           echo "Project root: $PROJECT_ROOT"
 
           rm -rf main
+
           cp -a "$PROJECT_ROOT"/. .
 
           rm -rf /tmp/nyrfps
           rm -f /tmp/nyrfps.zip
 
-          echo "Project structure fixed."
+          echo "Project restored correctly."
 
-      - name: Commit fixed project
+      - name: Commit project
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          git add -A
+          git add -A -- ':!.github/workflows/build.yml'
+
           git commit -m "Fix NyrFps project structure" || echo "Nothing to commit"
+
           git push
