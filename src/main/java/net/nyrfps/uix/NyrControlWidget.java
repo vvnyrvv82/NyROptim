@@ -13,14 +13,6 @@ import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
-/**
- * NyrFps settings control widget.
- *
- * Supports:
- * - normal button
- * - ON/OFF toggle
- * - integer slider
- */
 public class NyrControlWidget extends AbstractWidget {
 
     private static final int KIND_BUTTON = 0;
@@ -52,9 +44,6 @@ public class NyrControlWidget extends AbstractWidget {
 
     private boolean dragging;
 
-    /**
-     * Normal button.
-     */
     public NyrControlWidget(
             int x,
             int y,
@@ -76,9 +65,6 @@ public class NyrControlWidget extends AbstractWidget {
         this.action = action;
     }
 
-    /**
-     * Boolean ON/OFF control.
-     */
     public NyrControlWidget(
             int x,
             int y,
@@ -102,9 +88,6 @@ public class NyrControlWidget extends AbstractWidget {
         this.boolSet = boolSet;
     }
 
-    /**
-     * Integer slider.
-     */
     public NyrControlWidget(
             int x,
             int y,
@@ -127,18 +110,13 @@ public class NyrControlWidget extends AbstractWidget {
 
         this.label = label;
         this.kind = KIND_INT;
-
         this.intGet = intGet;
         this.intSet = intSet;
-
         this.min = min;
         this.max = max;
         this.step = Math.max(1, step);
     }
 
-    /**
-     * Render widget.
-     */
     @Override
     protected void extractWidgetRenderState(
             GuiGraphicsExtractor gfx,
@@ -157,7 +135,6 @@ public class NyrControlWidget extends AbstractWidget {
                 mouseY >= y &&
                 mouseY <= y + h;
 
-        // Background
         gfx.fill(
                 x,
                 y,
@@ -166,7 +143,6 @@ public class NyrControlWidget extends AbstractWidget {
                 hovered ? BG_HOVER : BG
         );
 
-        // Top border
         gfx.fill(
                 x,
                 y,
@@ -175,7 +151,6 @@ public class NyrControlWidget extends AbstractWidget {
                 BORDER
         );
 
-        // Bottom border
         gfx.fill(
                 x,
                 y + h - 1,
@@ -188,9 +163,6 @@ public class NyrControlWidget extends AbstractWidget {
 
         switch (kind) {
 
-            /*
-             * Normal button
-             */
             case KIND_BUTTON -> {
                 int textWidth = mc.font.width(label);
 
@@ -204,13 +176,8 @@ public class NyrControlWidget extends AbstractWidget {
                 );
             }
 
-            /*
-             * ON/OFF switch
-             */
             case KIND_BOOL -> {
-                boolean on =
-                        boolGet != null &&
-                        boolGet.get();
+                boolean on = boolGet != null && boolGet.get();
 
                 gfx.text(
                         mc.font,
@@ -224,13 +191,9 @@ public class NyrControlWidget extends AbstractWidget {
                 int pillW = 34;
                 int pillH = 14;
 
-                int px =
-                        x + w - pillW - 10;
+                int px = x + w - pillW - 10;
+                int py = y + (h - pillH) / 2;
 
-                int py =
-                        y + (h - pillH) / 2;
-
-                // Switch background
                 gfx.fill(
                         px,
                         py,
@@ -239,7 +202,6 @@ public class NyrControlWidget extends AbstractWidget {
                         on ? ON : OFF
                 );
 
-                // Switch knob
                 int knob = 10;
 
                 int kx = on
@@ -255,9 +217,6 @@ public class NyrControlWidget extends AbstractWidget {
                 );
             }
 
-            /*
-             * Integer slider
-             */
             case KIND_INT -> {
                 int value =
                         intGet != null
@@ -267,7 +226,6 @@ public class NyrControlWidget extends AbstractWidget {
                 String valueText =
                         String.valueOf(value);
 
-                // Label
                 gfx.text(
                         mc.font,
                         label,
@@ -277,17 +235,17 @@ public class NyrControlWidget extends AbstractWidget {
                         false
                 );
 
-                // Current value
                 gfx.text(
                         mc.font,
                         valueText,
-                        x + w - mc.font.width(valueText) - 10,
+                        x + w
+                                - mc.font.width(valueText)
+                                - 10,
                         y + 6,
                         ACCENT,
                         false
                 );
 
-                // Slider bar
                 int barX = x + 10;
                 int barY = y + h - 9;
                 int barW = w - 20;
@@ -301,20 +259,19 @@ public class NyrControlWidget extends AbstractWidget {
                         OFF
                 );
 
-                float progress =
+                float t =
                         max > min
                                 ? (float) (value - min)
                                 / (float) (max - min)
                                 : 0.0f;
 
-                progress =
-                        Math.max(
-                                0.0f,
-                                Math.min(1.0f, progress)
-                        );
+                t = Math.max(
+                        0.0f,
+                        Math.min(1.0f, t)
+                );
 
                 int fillW =
-                        Math.round(barW * progress);
+                        Math.round(barW * t);
 
                 if (fillW > 0) {
                     gfx.fill(
@@ -329,9 +286,6 @@ public class NyrControlWidget extends AbstractWidget {
         }
     }
 
-    /**
-     * Accessibility narration.
-     */
     @Override
     protected void updateWidgetNarration(
             NarrationElementOutput output
@@ -342,11 +296,6 @@ public class NyrControlWidget extends AbstractWidget {
         );
     }
 
-    /**
-     * Mouse click.
-     *
-     * Minecraft 26.2 uses MouseButtonEvent.
-     */
     @Override
     public void onClick(
             MouseButtonEvent event,
@@ -370,19 +319,11 @@ public class NyrControlWidget extends AbstractWidget {
 
             case KIND_INT -> {
                 dragging = true;
-
-                setFromMouse(
-                        event.x()
-                );
+                setFromMouse(event.x());
             }
         }
     }
 
-    /**
-     * Slider dragging.
-     *
-     * Minecraft 26.2 uses MouseButtonEvent.
-     */
     @Override
     protected void onDrag(
             MouseButtonEvent event,
@@ -390,15 +331,10 @@ public class NyrControlWidget extends AbstractWidget {
             double dragY
     ) {
         if (kind == KIND_INT && dragging) {
-            setFromMouse(
-                    event.x()
-            );
+            setFromMouse(event.x());
         }
     }
 
-    /**
-     * Mouse release.
-     */
     @Override
     public void onRelease(
             MouseButtonEvent event
@@ -406,9 +342,6 @@ public class NyrControlWidget extends AbstractWidget {
         dragging = false;
     }
 
-    /**
-     * Convert mouse position into slider value.
-     */
     private void setFromMouse(
             double mouseX
     ) {
@@ -418,7 +351,7 @@ public class NyrControlWidget extends AbstractWidget {
 
         double t =
                 (mouseX - getX())
-                / (double) this.width;
+                        / (double) this.width;
 
         t = Math.max(
                 0.0,
@@ -426,10 +359,10 @@ public class NyrControlWidget extends AbstractWidget {
         );
 
         int raw =
-                min +
-                (int) Math.round(
-                        t * (max - min)
-                );
+                min
+                        + (int) Math.round(
+                                t * (max - min)
+                        );
 
         int stepped =
                 Math.round(
