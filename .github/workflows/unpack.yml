@@ -16,22 +16,28 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Restore project from previous ZIP
+      - name: Restore project from ZIP
         run: |
           set -e
 
-          echo "Searching ZIP in previous commit..."
+          ZIP_COMMIT=$(git log --all --format='%H' -- '*.zip' | head -n 1)
 
-          ZIP=$(git ls-tree -r --name-only HEAD~1 | grep -E '\.zip$' | head -n 1)
-
-          if [ -z "$ZIP" ]; then
-            echo "ZIP not found"
+          if [ -z "$ZIP_COMMIT" ]; then
+            echo "ZIP commit not found"
             exit 1
           fi
 
-          echo "Found ZIP: $ZIP"
+          ZIP_PATH=$(git ls-tree -r --name-only "$ZIP_COMMIT" | grep -E '\.zip$' | head -n 1)
 
-          git show "HEAD~1:$ZIP" > /tmp/nyrfps.zip
+          if [ -z "$ZIP_PATH" ]; then
+            echo "ZIP path not found"
+            exit 1
+          fi
+
+          echo "ZIP commit: $ZIP_COMMIT"
+          echo "ZIP path: $ZIP_PATH"
+
+          git show "$ZIP_COMMIT:$ZIP_PATH" > /tmp/nyrfps.zip
 
           rm -rf /tmp/nyrfps
           mkdir -p /tmp/nyrfps
@@ -42,20 +48,16 @@ jobs:
 
           if [ -z "$PROJECT_ROOT" ]; then
             echo "build.gradle not found"
-            find /tmp/nyrfps -maxdepth 4 -type f
             exit 1
           fi
 
           echo "Project root: $PROJECT_ROOT"
 
           rm -rf main
-
           cp -a "$PROJECT_ROOT"/. .
 
           rm -rf /tmp/nyrfps
           rm -f /tmp/nyrfps.zip
-
-          echo "Project restored."
 
       - name: Commit fixed project
         run: |
